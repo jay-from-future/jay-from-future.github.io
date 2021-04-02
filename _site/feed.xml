@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.0">Jekyll</generator><link href="https://jay-from-future.github.io//feed.xml" rel="self" type="application/atom+xml" /><link href="https://jay-from-future.github.io//" rel="alternate" type="text/html" /><updated>2021-04-02T19:54:44+03:00</updated><id>https://jay-from-future.github.io//feed.xml</id><title type="html">Jay From Future’s Blog (but not about future or futures)</title><subtitle>Dark times lie ahead of us and there will be a time when we must choose between what is easy and what is right. (Albus Dumbledore, Harry Potter and the Goblet of Fire)</subtitle><entry><title type="html">Unauthorized access to Code With Me traffic (CVE-2021-25755)</title><link href="https://jay-from-future.github.io//cve/2021/04/02/code-with-me-cve.html" rel="alternate" type="text/html" title="Unauthorized access to Code With Me traffic (CVE-2021-25755)" /><published>2021-04-02T12:26:56+03:00</published><updated>2021-04-02T12:26:56+03:00</updated><id>https://jay-from-future.github.io//cve/2021/04/02/code-with-me-cve</id><content type="html" xml:base="https://jay-from-future.github.io//cve/2021/04/02/code-with-me-cve.html">&lt;p&gt;In this post I am going to share some details about &lt;a href=&quot;https://www.jetbrains.com/code-with-me/&quot;&gt;Code With Me&lt;/a&gt; traffic interception vulnerability &lt;a href=&quot;https://nvd.nist.gov/vuln/detail/CVE-2021-25755&quot;&gt;CVE-2021-25755&lt;/a&gt;. Code With Me is a new collaborative development and pair programming service from JetBrains that provides such experience &lt;em&gt;just one click away&lt;/em&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;short-description&quot;&gt;Short description:&lt;/h2&gt;
+
+&lt;p&gt;In JetBrains Code With Me before 2020.3, an attacker on the local network, knowing a session ID, could get access to the encrypted traffic.&lt;/p&gt;
+
+&lt;h2 id=&quot;links&quot;&gt;Links:&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.jetbrains.com/blog/2021/02/03/jetbrains-security-bulletin-q4-2020/&quot;&gt;JetBrains Security Bulletin Q4 2020&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://nvd.nist.gov/vuln/detail/CVE-2021-25755&quot;&gt;CVE-2021-25755&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://youtrack.jetbrains.com/issue/CWM-1067&quot;&gt;CWM-1067&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.jetbrains.com/legal/docs/terms/coordinated-disclosure.html&quot;&gt;JetBrains Coordinated Disclosure Policy&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;details&quot;&gt;Details:&lt;/h2&gt;
+
+&lt;p&gt;I intercepted Code With Me traffic and found the following request to create a new session. I slightly changed it to an see error message in response:&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;/images/json_parsing_error_message_too_verbose.png&quot;&gt;&lt;img src=&quot;/images/json_parsing_error_message_too_verbose.png&quot; alt=&quot;json_parsing_error_message_too_verbose&quot; /&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;It turned out that it was possible to replace TCP endpoint hosts for existing sessions.  The main problem here is that it was possible to define session for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;createSession&lt;/code&gt; request and replace existing session with another one but define different TCP host for the new session using information from the invitation link only:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;Host generates the invitation link and share it with other participants&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Attacker takes this invitation link with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;session id&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;fingerprint&lt;/code&gt; in parameters:
+    &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;https://code-with-me.jetbrains.com/sUn2L9Js6TNjV77U3vxvAQ#p=IC&amp;amp;
+fp=0432495F97E9FBD672266015DD1E3E3361BAEFAA0E16E8CA47BEA23A39136E87
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Attacker updates current session properties with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sessionId&lt;/code&gt; parameter and set &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;hostDirectTcpEndpoints&lt;/code&gt; to attacker’s host with TCP proxy 
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&quot;hostDirectTcpEndpoints&quot; : [ &quot;tcp://&amp;lt;attacker_host&amp;gt;:&amp;lt;port&amp;gt;&quot;]&lt;/code&gt;  using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sessionId&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;hostFingerprint&lt;/code&gt; from the invitation link: &lt;a href=&quot;/images/change_properties_of_existing_session_using_public_information.png&quot;&gt;&lt;img src=&quot;/images/change_properties_of_existing_session_using_public_information.png&quot; alt=&quot;change_properties_of_existing_session_using_public_information&quot; /&gt;&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Victims follow this link to connect to the Host, but instead it connects to the attacker’s host (which could proxy “Code With Me” traffic to a legitimate Host).
+Victim starts connection process and request details using the invitation link:
+&lt;a href=&quot;/images/client_request_for_tcp_endpoint_returns_attacker_host.png&quot;&gt;&lt;img src=&quot;/images/client_request_for_tcp_endpoint_returns_attacker_host.png&quot; alt=&quot;client_request_for_tcp_endpoint_returns_attacker_host&quot; /&gt;&lt;/a&gt;
+Victim receives an attacker host for connection: 
+&lt;a href=&quot;/images/response_to_client_with_attacker_host.png&quot;&gt;&lt;img src=&quot;/images/response_to_client_with_attacker_host.png&quot; alt=&quot;response_to_client_with_attacker_host&quot; /&gt;&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Attacker intercepts encrypted traffic between the victims and legitimate Host (Victim’s IDE -&amp;gt; Attacker host -&amp;gt; Original Host IDE that is running locally):
+&lt;a href=&quot;/images/tcp_proxy_log.png&quot;&gt;&lt;img src=&quot;/images/tcp_proxy_log.png&quot; alt=&quot;tcp_proxy_log&quot; /&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;timeline&quot;&gt;Timeline:&lt;/h2&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;6 Oct 2020 - reported to JetBrains (CWM-1067)&lt;/li&gt;
+  &lt;li&gt;7 Oct 2020 - confirmed&lt;/li&gt;
+  &lt;li&gt;1 Nov 2020 - fixed&lt;/li&gt;
+  &lt;li&gt;3 Feb 2021 - mentioned in JetBrains Security Bulletin, CVE assigned&lt;/li&gt;
+&lt;/ol&gt;</content><author><name></name></author><category term="cve" /><summary type="html">In this post I am going to share some details about Code With Me traffic interception vulnerability CVE-2021-25755. Code With Me is a new collaborative development and pair programming service from JetBrains that provides such experience just one click away.</summary></entry></feed>
