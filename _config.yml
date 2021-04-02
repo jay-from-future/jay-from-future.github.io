@@ -11,3 +11,4 @@ github_username: jay-from-future
 # Build settings
 theme: minima
 plugins: []
+show_excerpts: true
