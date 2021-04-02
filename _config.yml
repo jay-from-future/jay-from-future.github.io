@@ -9,6 +9,6 @@ twitter_username:
 github_username: jay-from-future
 
 # Build settings
-theme: minima
+theme: jekyll-theme-midnight
 plugins: []
 show_excerpts: true
